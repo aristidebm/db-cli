@@ -1,7 +1,6 @@
 package client
 
 import (
-	"errors"
 	_ "fmt"
 	"io"
 	"net/url"

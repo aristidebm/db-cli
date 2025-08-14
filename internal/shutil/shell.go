@@ -11,7 +11,7 @@ import (
 type cmdOption struct {
 	stdin io.Reader
 	stdout io.Writer
-	stderr io.Reader
+	stderr io.Writer
 	cwd string
 }
 
@@ -29,7 +29,7 @@ func WithStdout(stdout io.Writer) cmdOptionFunc {
 	}
 }
 
-func WithStderr(stderr io.Reader) cmdOptionFunc {
+func WithStderr(stderr io.Writer) cmdOptionFunc {
 	return func (o *cmdOption)  {
 		o.stderr = stderr 
 	}
@@ -41,7 +41,7 @@ func WithCwd(cwd string)  cmdOptionFunc {
 	}
 }
 
-func defaultCmdOption(o *cmdOption, options ...cmdOptionFunc) {
+func manageCmdOption(o *cmdOption, options ...cmdOptionFunc) {
 	for _, fn := range options {
 		fn(o)	
 	} 
@@ -60,19 +60,21 @@ func defaultCmdOption(o *cmdOption, options ...cmdOptionFunc) {
 }
 
 // Command execution utilities
-func RunCommand(name string, args ...string) error {
-	cmd := exec.Command(name, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
+func Run(cmd *exec.Cmd, options ...cmdOptionFunc) error {
+	opt := &cmdOption{}
+	manageCmdOption(opt)
+	cmd.Stdout = opt.stdout
+	cmd.Stderr = opt.stderr
+	cmd.Stdin = opt.stdin
 	return cmd.Run()
 }
 
-func RunInteractiveCommand(name string, args ...string) error {
-	cmd := exec.Command(name, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
+func RunInteractive(cmd *exec.Cmd, options ...cmdOptionFunc) error {
+	opt := &cmdOption{}
+	manageCmdOption(opt)
+	cmd.Stdout = opt.stdout
+	cmd.Stderr = opt.stderr
+	cmd.Stdin = opt.stdin
 	
 	// For interactive commands, we want to replace the current process
 	// This mimics the behavior of exec in shell
