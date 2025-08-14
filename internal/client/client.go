@@ -7,6 +7,18 @@ import (
 	"strings"
 )
 
+type Format string
+
+const (
+	JSON     Format = "json"
+	CSV             = "csv"
+	HTML            = "html"
+	MARKDOWN        = "md"
+	LATEX           = "latex"
+	ASCIIDOC        = "asciidoc"
+	DEFAULT         = "default"
+)
+
 type DataSource interface {
 	Ping() error
 	Connect() error
@@ -28,12 +40,14 @@ type Client struct {
 	Stdout io.Writer
 	Stdin  io.Reader
 	Stderr io.Writer
+	Format Format
 	DataSource
 }
 
 func NewClient(connectionURL string) *Client {
 	client := &Client{URL: connectionURL}
 	client.parseURL()
+	client.Format = DEFAULT
 	return client
 }
 
