@@ -5,6 +5,7 @@ import (
 	"os/exec"
 
 	"example.com/db/internal/shutil"
+	"example.com/db/internal/types"
 )
 
 type Postgres struct {
@@ -41,13 +42,13 @@ func (c *Postgres) RunQuery(query string) error {
 	args = append(args, "-c", query)
 
 	switch c.Format {
-	case CSV:
+	case types.CSV:
 		args = append(args, "--pset format csv")
-	case HTML:
+	case types.HTML:
 		args = append(args, "--pset format html")
-	case LATEX:
+	case types.LATEX:
 		args = append(args, "--pset format latex")
-	case ASCIIDOC:
+	case types.ASCIIDOC:
 		args = append(args, "--pset format asciidoc")
 	default:
 		return fmt.Errorf("%w: driver %s", UnsupportedFormat, c.Driver)
@@ -67,4 +68,8 @@ func (c *Postgres) ListTables() error {
 
 func (c *Postgres) ListDatabases() error {
 	return c.RunQuery("\\l")
+}
+
+func (c *Postgres) String() string {
+	return c.URL
 }

@@ -1,57 +1,59 @@
 package shutil
 
 import (
+	"errors"
+	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"syscall"
 	"time"
-	"io"
 )
 
 type cmdOption struct {
-	stdin io.Reader
+	stdin  io.Reader
 	stdout io.Writer
 	stderr io.Writer
-	cwd string
+	cwd    string
 }
 
-type cmdOptionFunc func (*cmdOption)
+type cmdOptionFunc func(*cmdOption)
 
 func WithStdin(stdin io.Reader) cmdOptionFunc {
-	return func (o *cmdOption)  {
-		o.stdin = stdin		
+	return func(o *cmdOption) {
+		o.stdin = stdin
 	}
 }
 
 func WithStdout(stdout io.Writer) cmdOptionFunc {
-	return func (o *cmdOption)  {
-		o.stdout = stdout 
+	return func(o *cmdOption) {
+		o.stdout = stdout
 	}
 }
 
 func WithStderr(stderr io.Writer) cmdOptionFunc {
-	return func (o *cmdOption)  {
-		o.stderr = stderr 
+	return func(o *cmdOption) {
+		o.stderr = stderr
 	}
 }
 
-func WithCwd(cwd string)  cmdOptionFunc {
-	return func (o *cmdOption)  {
-		o.cwd = cwd 
+func WithCwd(cwd string) cmdOptionFunc {
+	return func(o *cmdOption) {
+		o.cwd = cwd
 	}
 }
 
 func manageCmdOption(o *cmdOption, options ...cmdOptionFunc) {
 	for _, fn := range options {
-		fn(o)	
-	} 
+		fn(o)
+	}
 
 	if o.stdin == nil {
-		o.stdin = os.Stdin 
+		o.stdin = os.Stdin
 	}
 
 	if o.stdout == nil {
-		o.stdout = os.Stdout 
+		o.stdout = os.Stdout
 	}
 
 	if o.stderr == nil {
@@ -75,7 +77,7 @@ func RunInteractive(cmd *exec.Cmd, options ...cmdOptionFunc) error {
 	cmd.Stdout = opt.stdout
 	cmd.Stderr = opt.stderr
 	cmd.Stdin = opt.stdin
-	
+
 	// For interactive commands, we want to replace the current process
 	// This mimics the behavior of exec in shell
 	err := cmd.Run()
@@ -92,7 +94,7 @@ func RunInteractive(cmd *exec.Cmd, options ...cmdOptionFunc) error {
 
 func FileExists(filename string) bool {
 	_, err := os.Stat(filename)
-	return !os.IsNotExist(err)
+	return !errors.Is(err, fs.ErrNotExist)
 }
 
 func CreateDirIfNotExists(dir string) error {
@@ -104,4 +106,9 @@ func CreateDirIfNotExists(dir string) error {
 
 func GetCurrentTimestamp() string {
 	return time.Now().Format("20060102_150405")
+}
+
+func IsCommandInstalled(command string) bool {
+	_, err := exec.LookPath(command)
+	return err == nil
 }

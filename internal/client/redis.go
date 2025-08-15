@@ -56,3 +56,7 @@ func (c *Redis) ListTables() error {
 func (c *Redis) ListDatabases() error {
 	return c.RunQuery("CONFIG GET databases")
 }
+
+func (c *Redis) String() string {
+	return c.URL
+}

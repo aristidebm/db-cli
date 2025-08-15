@@ -72,6 +72,7 @@ lint:
 # EOF
 # 	@echo "Example config created at ~/.sql/config.toml"
 
+# Help
 help:
 	@echo "Available targets:"
 	@echo "  build        - Build the binary"

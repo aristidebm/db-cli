@@ -1,9 +1,10 @@
 package client
 
 import (
-	"os/exec"
-
 	"example.com/db/internal/shutil"
+	"example.com/db/internal/types"
+	"fmt"
+	"os/exec"
 )
 
 type MySQL struct {
@@ -40,13 +41,13 @@ func (c *MySQL) RunQuery(query string) error {
 	args = append(args, "-e", query)
 
 	switch c.Format {
-	case CSV:
+	case types.CSV:
 		args = append(args, "--pset format csv")
-	case HTML:
+	case types.HTML:
 		args = append(args, "--pset format html")
-	case LATEX:
+	case types.LATEX:
 		args = append(args, "--pset format latex")
-	case ASCIIDOC:
+	case types.ASCIIDOC:
 		args = append(args, "--pset format asciidoc")
 	default:
 		return fmt.Errorf("%w: driver %s", UnsupportedFormat, c.Driver)
@@ -66,4 +67,8 @@ func (c *MySQL) ListTables() error {
 
 func (c *MySQL) ListDatabases() error {
 	return c.RunQuery("SHOW DATABASES;")
+}
+
+func (c *MySQL) String() string {
+	return c.URL
 }
