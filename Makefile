@@ -3,7 +3,7 @@
 .PHONY: build install clean test deps check-deps run
 
 # Variables
-BINARY_NAME=sql-cli
+BINARY_NAME=db-cli
 BUILD_DIR=./build
 GO_FILES=$(shell find . -name "*.go" -type f)
 

@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"io"
 	"os/exec"
 
 	"example.com/db/internal/shutil"
@@ -17,19 +18,27 @@ func (c *Postgres) SetClient(client *Client) {
 }
 
 func (c *Postgres) Ping() error {
-	args := []string{}
+	args := []string{c.URL}
 	args = append(args, "-c", "SELECT 1;")
 	cmd := exec.Command("psql", args...)
-	return shutil.Run(cmd,
+	err := shutil.Run(cmd,
 		shutil.WithStdin(c.Stdin),
-		shutil.WithStdout(c.Stdout),
-		shutil.WithStderr(c.Stderr),
+		shutil.WithStdout(io.Discard),
+		shutil.WithStderr(io.Discard),
 	)
+	if err == nil {
+		fmt.Println(shutil.ColorGreen("pong"))
+	}
+	return err
 }
 
 func (c *Postgres) Connect() error {
-	args := []string{}
-	cmd := exec.Command("psql", args...)
+	args := []string{c.URL}
+	prog := c.Client.GetInteractiveREPL()
+	if prog == "" {
+		prog = "psql"
+	}
+	cmd := exec.Command(prog, args...)
 	return shutil.RunInteractive(cmd,
 		shutil.WithStdin(c.Stdin),
 		shutil.WithStdout(c.Stdout),
@@ -37,11 +46,10 @@ func (c *Postgres) Connect() error {
 	)
 }
 
-func (c *Postgres) RunQuery(query string) error {
-	args := []string{}
-	args = append(args, "-c", query)
+func (c *Postgres) RunQuery(query string, args ...string) error {
+	args = append(args, c.URL, "-c", query)
 
-	switch c.Format {
+	switch c.GetFormat() {
 	case types.CSV:
 		args = append(args, "--pset format csv")
 	case types.HTML:
@@ -50,10 +58,11 @@ func (c *Postgres) RunQuery(query string) error {
 		args = append(args, "--pset format latex")
 	case types.ASCIIDOC:
 		args = append(args, "--pset format asciidoc")
+	case "":
+		// nothing to do
 	default:
 		return fmt.Errorf("%w: driver %s", UnsupportedFormat, c.Driver)
 	}
-
 	cmd := exec.Command("psql", args...)
 	return shutil.Run(cmd,
 		shutil.WithStdin(c.Stdin),

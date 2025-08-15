@@ -1,11 +1,10 @@
 package client
 
 import (
-	_ "fmt"
+	"example.com/db/internal/shutil"
+	"fmt"
 	"os/exec"
 	_ "strings"
-
-	"example.com/db/internal/shutil"
 )
 
 type Redis struct {
@@ -19,17 +18,25 @@ func (c *Redis) SetClient(client *Client) {
 func (c *Redis) Ping() error {
 	args := []string{}
 	args = append(args, "PING")
-	cmd := exec.Command("redis-cli", args...)
-	return shutil.Run(cmd,
+	cmd := exec.Command(c.getDefaultCommand(), args...)
+	err := shutil.Run(cmd,
 		shutil.WithStdin(c.Stdin),
 		shutil.WithStdout(c.Stdout),
 		shutil.WithStderr(c.Stderr),
 	)
+	if err == nil {
+		fmt.Println(shutil.ColorGreen("pong"))
+	}
+	return err
 }
 
 func (c *Redis) Connect() error {
 	args := []string{}
-	cmd := exec.Command("redis-cli", args...)
+	prog := c.Client.GetInteractiveREPL()
+	if prog == "" {
+		prog = c.getDefaultCommand()
+	}
+	cmd := exec.Command(prog, args...)
 	return shutil.RunInteractive(cmd,
 		shutil.WithStdin(c.Stdin),
 		shutil.WithStdout(c.Stdout),
@@ -37,11 +44,10 @@ func (c *Redis) Connect() error {
 	)
 }
 
-func (c *Redis) RunQuery(query string) error {
-	args := []string{}
+func (c *Redis) RunQuery(query string, args ...string) error {
 	// parts := strings.Fields(query)
 	args = append(args, query)
-	cmd := exec.Command("redis-cli", args...)
+	cmd := exec.Command(c.getDefaultCommand(), args...)
 	return shutil.RunInteractive(cmd,
 		shutil.WithStdin(c.Stdin),
 		shutil.WithStdout(c.Stdout),
@@ -59,4 +65,11 @@ func (c *Redis) ListDatabases() error {
 
 func (c *Redis) String() string {
 	return c.URL
+}
+
+func (c *Redis) getDefaultCommand() string {
+	if shutil.IsCommandInstalled("valkey-cli") {
+		return "valkey-cli"
+	}
+	return "redis-cli"
 }

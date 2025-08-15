@@ -11,7 +11,7 @@ import (
 type DataSource interface {
 	Ping() error
 	Connect() error
-	RunQuery(string) error
+	RunQuery(string, ...string) error
 	ListTables() error
 	ListDatabases() error
 	SetClient(client *Client)
@@ -41,7 +41,6 @@ func NewClient(connectionURL string) (*Client, error) {
 	if err := client.parseURL(); err != nil {
 		return nil, err
 	}
-	client.Format = types.DEFAULT
 	return client, nil
 }
 
@@ -78,17 +77,34 @@ func (c *Client) parseURL() error {
 			c.Port = "5432"
 		}
 		c.DataSource = &Postgres{}
-	case "mysql":
-		if c.Port == "" {
-			c.Port = "3306"
-		}
-		c.DataSource = &MySQL{}
 	}
 
 	if c.DataSource == nil {
 		return shutil.URLParseError
 	}
-
 	c.DataSource.SetClient(c)
 	return nil
+}
+
+func (c *Client) GetInteractiveREPL() string {
+	if c.SourceConfig.Interactive != "" {
+		return c.SourceConfig.Interactive
+	}
+	if c.DriverConfig.Interactive != "" {
+		return c.DriverConfig.Interactive
+	}
+	return ""
+}
+
+func (c *Client) GetFormat() types.Format {
+	if c.Format != "" {
+		return c.Format
+	}
+	if c.SourceConfig.Format != "" {
+		return c.SourceConfig.Format
+	}
+	if c.DriverConfig.Format != "" {
+		return c.DriverConfig.Format
+	}
+	return ""
 }

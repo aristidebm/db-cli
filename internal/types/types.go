@@ -9,20 +9,15 @@ const (
 	MARKDOWN        = "md"
 	LATEX           = "latex"
 	ASCIIDOC        = "asciidoc"
-	DEFAULT         = "default"
 )
 
 type Source struct {
-	URL     string `toml:"url"`
-	Ping    string `toml:"ping"`
-	Connect string `toml:"connect"`
-	Query   string `toml:"query"`
-	Format  Format `toml:"format"`
+	URL         string `toml:"url"`
+	Interactive string `toml:"interactive"`
+	Format      Format `toml:"format"`
 }
 
 type Driver struct {
-	Ping    string `toml:"ping"`
-	Connect string `toml:"connect"`
-	Query   string `toml:"query"`
-	Format  Format `toml:"format"`
+	Interactive string `toml:"interactive"`
+	Format      Format `toml:"format"`
 }

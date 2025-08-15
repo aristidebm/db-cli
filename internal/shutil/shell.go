@@ -1,6 +1,7 @@
 package shutil
 
 import (
+	// "fmt"
 	"errors"
 	"io"
 	"io/fs"
@@ -64,7 +65,7 @@ func manageCmdOption(o *cmdOption, options ...cmdOptionFunc) {
 // Command execution utilities
 func Run(cmd *exec.Cmd, options ...cmdOptionFunc) error {
 	opt := &cmdOption{}
-	manageCmdOption(opt)
+	manageCmdOption(opt, options...)
 	cmd.Stdout = opt.stdout
 	cmd.Stderr = opt.stderr
 	cmd.Stdin = opt.stdin
@@ -73,7 +74,7 @@ func Run(cmd *exec.Cmd, options ...cmdOptionFunc) error {
 
 func RunInteractive(cmd *exec.Cmd, options ...cmdOptionFunc) error {
 	opt := &cmdOption{}
-	manageCmdOption(opt)
+	manageCmdOption(opt, options...)
 	cmd.Stdout = opt.stdout
 	cmd.Stderr = opt.stderr
 	cmd.Stdin = opt.stdin

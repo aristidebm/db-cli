@@ -1,22 +1,19 @@
 [sources.cd]
 url = "postgres://postgres:@127.0.0.1:5432/database"
-ping = "psql"
-connect = "pgcli"
-query = "psql"
+interactive = "pgcli"
 format = "csv"
 
 [sources.pg]
 url = "postgres://postgres:@127.0.0.1:5432/postgres" 
 
 [sources.sakila]
-url = "sqlite3:///$HOME/Projects/personal/sql/datasets/sakila.db"
-connect = "litecli"
+url = "sqlite3:///home/user/Projects/personal/sql/datasets/sakila.db"
+interactive = "litecli"
+format = "csv"
 
 [sources.redis]
 url = "redis://127.0.0.1:6379"
 
 [drivers.postgres]
-ping = "psql"
-connect = "pgcli"
-query = "psql"
+interactive = "pgcli"
 format = "csv"

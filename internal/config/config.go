@@ -95,6 +95,22 @@ func (c *Config) RemoveSource(name string) error {
 	return c.Save()
 }
 
+func (c *Config) GetSource(name string) (types.Source, error) {
+	source, ok := c.Sources[name]
+	if !ok {
+		return types.Source{}, fmt.Errorf("%w: source '%s' not found", InvalidSource, name)
+	}
+	return source, nil
+}
+
+func (c *Config) GetDriver(name string) (types.Driver, error) {
+	driver, ok := c.Drivers[name]
+	if !ok {
+		return types.Driver{}, fmt.Errorf("%w: driver '%s' not found", UnsupportedDriver, name)
+	}
+	return driver, nil
+}
+
 func (c *Config) getConfigPath() string {
 	return filepath.Join(shutil.GetConfigDir(), "config.toml")
 }
@@ -107,36 +123,19 @@ func (c *Config) validate() error {
 				InvalidSource, name)
 		}
 
-		if source.Ping != "" && !c.isExecutable(source.Ping) {
+		if source.Interactive != "" && !c.isExecutable(source.Interactive) {
 			return fmt.Errorf("%w: client '%s' in source %s is not executable",
-				InvalidClient, source.Ping, name)
-		}
-
-		if source.Connect != "" && !c.isExecutable(source.Connect) {
-			return fmt.Errorf("%w: client '%s' in source %s is not executable",
-				InvalidClient, source.Ping, name)
-		}
-
-		if source.Query != "" && !c.isExecutable(source.Query) {
-			return fmt.Errorf("%w: client '%s' in source %s is not executable",
-				InvalidClient, source.Ping, name)
+				InvalidClient, source.Interactive, name)
 		}
 	}
 
 	for name, driver := range c.Drivers {
-		if driver.Ping != "" && !c.isExecutable(driver.Ping) {
+		if driver.Interactive != "" && !c.isExecutable(driver.Interactive) {
 			return fmt.Errorf("%w: client '%s' in driver %s is not executable",
-				InvalidClient, driver.Ping, name)
-		}
-		if driver.Connect != "nil" && !c.isExecutable(driver.Connect) {
-			return fmt.Errorf("%w: client '%s' in driver %s is not executable",
-				InvalidClient, driver.Ping, name)
-		}
-		if driver.Query != "" && !c.isExecutable(driver.Query) {
-			return fmt.Errorf("%w: client '%s' in driver %s is not executable",
-				InvalidClient, driver.Ping, name)
+				InvalidClient, driver.Interactive, name)
 		}
 	}
+
 	return nil
 }
 
