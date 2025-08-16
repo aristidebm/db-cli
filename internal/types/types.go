@@ -3,12 +3,13 @@ package types
 type Format string
 
 const (
-	JSON     Format = "json"
-	CSV             = "csv"
-	HTML            = "html"
-	MARKDOWN        = "md"
-	LATEX           = "latex"
-	ASCIIDOC        = "asciidoc"
+	JSON      Format = "json"
+	CSV              = "csv"
+	HTML             = "html"
+	MARKDOWN         = "md"
+	LATEX            = "latex"
+	ASCIIDOC         = "asciidoc"
+	UNALIGNED        = "unaligned"
 )
 
 type Source struct {

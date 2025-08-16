@@ -3,6 +3,7 @@ package client
 import (
 	"example.com/db/internal/shutil"
 	"fmt"
+	"io"
 	"os/exec"
 	_ "strings"
 )
@@ -45,22 +46,17 @@ func (c *Redis) Connect() error {
 }
 
 func (c *Redis) RunQuery(query string, args ...string) error {
-	// parts := strings.Fields(query)
 	args = append(args, query)
 	cmd := exec.Command(c.getDefaultCommand(), args...)
 	return shutil.RunInteractive(cmd,
 		shutil.WithStdin(c.Stdin),
-		shutil.WithStdout(c.Stdout),
-		shutil.WithStderr(c.Stderr),
+		shutil.WithStdout(io.Discard),
+		shutil.WithStderr(io.Discard),
 	)
 }
 
 func (c *Redis) ListTables() error {
 	return c.RunQuery("KEYS *")
-}
-
-func (c *Redis) ListDatabases() error {
-	return c.RunQuery("CONFIG GET databases")
 }
 
 func (c *Redis) String() string {

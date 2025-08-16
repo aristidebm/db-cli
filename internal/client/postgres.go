@@ -47,19 +47,23 @@ func (c *Postgres) Connect() error {
 }
 
 func (c *Postgres) RunQuery(query string, args ...string) error {
-	args = append(args, c.URL, "-c", query)
-
+	// Disable the pager by default, the user can enable it if needed
+	args = append(args, c.URL, "-c", query,
+		"--pset", "pager=off",
+		"--pset", "footer=off",
+	)
 	switch c.GetFormat() {
 	case types.CSV:
-		args = append(args, "--pset format csv")
+		args = append(args, "--pset", "format=csv")
 	case types.HTML:
-		args = append(args, "--pset format html")
+		args = append(args, "--pset", "format=html")
 	case types.LATEX:
-		args = append(args, "--pset format latex")
+		args = append(args, "--pset", "format=latex")
 	case types.ASCIIDOC:
-		args = append(args, "--pset format asciidoc")
+		args = append(args, "--pset", "format=asciidoc")
+	case types.UNALIGNED:
+		args = append(args, "--pset", "format=unaligned")
 	case "":
-		// nothing to do
 	default:
 		return fmt.Errorf("%w: driver %s", UnsupportedFormat, c.Driver)
 	}
@@ -72,11 +76,9 @@ func (c *Postgres) RunQuery(query string, args ...string) error {
 }
 
 func (c *Postgres) ListTables() error {
-	return c.RunQuery("\\dt")
-}
-
-func (c *Postgres) ListDatabases() error {
-	return c.RunQuery("\\l")
+	// \dt add some annoying headers
+	// return c.RunQuery("\\dt")
+	return c.RunQuery("SELECT schemaname AS \"Schema\", tablename AS \"Name\", 'table' AS \"Type\", tableowner AS \"Owner\" FROM pg_tables WHERE schemaname NOT IN ('pg_catalog', 'information_schema') ORDER BY schemaname, tablename;")
 }
 
 func (c *Postgres) String() string {

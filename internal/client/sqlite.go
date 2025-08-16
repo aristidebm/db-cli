@@ -49,21 +49,22 @@ func (c *SQLite) Connect() error {
 }
 
 func (c *SQLite) RunQuery(query string, args ...string) error {
+	defaultArgs := []string{}
 	switch c.GetFormat() {
 	case types.JSON:
-		args = append(args, "--json")
+		defaultArgs = append(defaultArgs, "--json")
 	case types.CSV:
-		args = append(args, "--csv")
+		defaultArgs = append(defaultArgs, "--csv")
 	case types.MARKDOWN, "markdown":
-		args = append(args, "--markdown")
+		defaultArgs = append(defaultArgs, "--markdown")
 	case types.HTML:
-		args = append(args, "--html")
+		defaultArgs = append(defaultArgs, "--html")
 	case "":
 		// nothing to-do
 	default:
 		return fmt.Errorf("%w: driver %s", UnsupportedFormat, c.Driver)
 	}
-
+	args = append(defaultArgs, args...)
 	args = append(args, c.Path, query)
 	cmd := exec.Command("sqlite3", args...)
 	return shutil.Run(cmd,
@@ -75,10 +76,6 @@ func (c *SQLite) RunQuery(query string, args ...string) error {
 
 func (c *SQLite) ListTables() error {
 	return c.RunQuery(".tables")
-}
-
-func (c *SQLite) ListDatabases() error {
-	return fmt.Errorf("%w driver %s", UnsupportedCommand, c.Driver)
 }
 
 func (c *SQLite) String() string {

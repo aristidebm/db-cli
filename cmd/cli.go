@@ -32,6 +32,7 @@ func Execute() {
 		createPingCommand(config),
 		createConnectCommand(config),
 		createRunCommand(config),
+		createListTablesCommand(config),
 	)
 
 	if err := rootCmd.Execute(); err != nil {
@@ -83,12 +84,28 @@ func createConnectCommand(config *config.Config) *cobra.Command {
 	}
 }
 
+func createListTablesCommand(config *config.Config) *cobra.Command {
+	return &cobra.Command{
+		Use:   "tables <source>",
+		Short: "List tables of a datasource",
+		Args:  cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			name := args[0]
+			c, err := getClient(config, name, "")
+			if err != nil {
+				return err
+			}
+			return c.ListTables()
+		},
+	}
+}
+
 func createRunCommand(config *config.Config) *cobra.Command {
 	var formatStr string = ""
 
 	runCmd := &cobra.Command{
 		Use:   "run <source> <query>",
-		Short: "Run a query on a datasource",
+		Short: "Run a query against a datasource",
 		Args:  cobra.MatchAll(cobra.MinimumNArgs(2), cobra.OnlyValidArgs),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			// we need enumerations please !
@@ -100,6 +117,7 @@ func createRunCommand(config *config.Config) *cobra.Command {
 				"markdown",
 				"latex",
 				"asciidoc",
+				"unaligned",
 			}
 			if formatStr != "" && !slices.Contains(validFormat, formatStr) {
 				return fmt.Errorf("invalid format: '%s', valid choices are json, csv, html, md, markdown, latex, asciidoc", formatStr)

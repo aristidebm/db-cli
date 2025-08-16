@@ -13,9 +13,8 @@ type DataSource interface {
 	Connect() error
 	RunQuery(string, ...string) error
 	ListTables() error
-	ListDatabases() error
-	SetClient(client *Client)
 	String() string
+	SetClient(client *Client)
 }
 
 type Client struct {
