@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
-	_ "strings"
+	"strings"
+
+	"example.com/db/internal/types"
 )
 
 type Redis struct {
@@ -17,13 +19,13 @@ func (c *Redis) SetClient(client *Client) {
 }
 
 func (c *Redis) Ping() error {
-	args := []string{}
+	args := []string{"-u", c.URL}
 	args = append(args, "PING")
 	cmd := exec.Command(c.getDefaultCommand(), args...)
 	err := shutil.Run(cmd,
 		shutil.WithStdin(c.Stdin),
-		shutil.WithStdout(c.Stdout),
-		shutil.WithStderr(c.Stderr),
+		shutil.WithStdout(io.Discard),
+		shutil.WithStderr(io.Discard),
 	)
 	if err == nil {
 		fmt.Println(shutil.ColorGreen("pong"))
@@ -32,7 +34,7 @@ func (c *Redis) Ping() error {
 }
 
 func (c *Redis) Connect() error {
-	args := []string{}
+	args := []string{"-u", c.URL}
 	prog := c.Client.GetInteractiveREPL()
 	if prog == "" {
 		prog = c.getDefaultCommand()
@@ -46,12 +48,27 @@ func (c *Redis) Connect() error {
 }
 
 func (c *Redis) RunQuery(query string, args ...string) error {
-	args = append(args, query)
+	defaultArgs := []string{}
+	switch c.GetFormat() {
+	case types.JSON:
+		defaultArgs = append(defaultArgs, "--json")
+	case types.CSV:
+		defaultArgs = append(defaultArgs, "--csv")
+	case "":
+		// nothing to-do
+	default:
+		return fmt.Errorf("%w: driver %s", UnsupportedFormat, c.Driver)
+	}
+
+	args = append(args, defaultArgs...)
+	args = append(args, "-u", c.URL)
+	args = append(args, strings.Fields(query)...)
+	// fmt.Print(args)
 	cmd := exec.Command(c.getDefaultCommand(), args...)
 	return shutil.RunInteractive(cmd,
 		shutil.WithStdin(c.Stdin),
-		shutil.WithStdout(io.Discard),
-		shutil.WithStderr(io.Discard),
+		shutil.WithStdout(c.Stdout),
+		shutil.WithStderr(c.Stderr),
 	)
 }
 
