@@ -139,7 +139,7 @@ func (c *Redis) ListTables() error {
 
 		// print the header
 		if entryNumber == 0 {
-			fmt.Fprintln(stdOut, strings.Join([]string{"TYPE", "ACCESS", "MUTATE", "KEY"}, "\t\t"))
+			fmt.Fprintln(stdOut, strings.Join([]string{"TYPE", "ACCESS", "MUTATE", "KEYS"}, "\t\t"))
 		}
 
 		fmt.Fprint(stdOut, strings.Join(output, "\t\t"))
