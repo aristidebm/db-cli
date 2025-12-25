@@ -3,14 +3,14 @@ package config
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
 
-	"github.com/BurntSushi/toml"
-
 	"example.com/db/internal/shutil"
 	"example.com/db/internal/types"
+	"github.com/BurntSushi/toml"
 )
 
 type Config struct {
@@ -109,6 +109,32 @@ func (c *Config) GetDriver(name string) (types.Driver, error) {
 		return types.Driver{}, fmt.Errorf("%w: driver '%s' not found", UnsupportedDriver, name)
 	}
 	return driver, nil
+}
+
+func (c *Config) Edit() error {
+	configPath := c.getConfigPath()
+	editor := shutil.GetEditor()
+
+	cmd := exec.Command(editor, configPath)
+	return shutil.Run(cmd,
+		shutil.WithStdin(os.Stdin),
+		shutil.WithStdout(os.Stdout),
+		shutil.WithStderr(os.Stderr),
+	)
+}
+
+func (c *Config) ListSources() error {
+	for src, _ := range c.Sources {
+		fmt.Println(src)
+	}
+	return nil
+}
+
+func (c *Config) ListDrivers() error {
+	for drv, _ := range c.Drivers {
+		fmt.Println(drv)
+	}
+	return nil
 }
 
 func (c *Config) getConfigPath() string {

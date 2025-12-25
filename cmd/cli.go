@@ -32,12 +32,25 @@ func Execute() {
 		createPingCommand(config),
 		createConnectCommand(config),
 		createRunCommand(config),
-		createListTablesCommand(config),
+		createListCollectionsCommand(config),
+		createEditCommand(config),
+		createListSourcesCommand(config),
+		createListDrivesCommand(config),
 	)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
+	}
+}
+
+func createEditCommand(config *config.Config) *cobra.Command {
+	return &cobra.Command{
+		Use:   "edit",
+		Short: "Edit configuration file in $EDITOR",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return config.Edit()
+		},
 	}
 }
 
@@ -84,10 +97,10 @@ func createConnectCommand(config *config.Config) *cobra.Command {
 	}
 }
 
-func createListTablesCommand(config *config.Config) *cobra.Command {
+func createListCollectionsCommand(config *config.Config) *cobra.Command {
 	return &cobra.Command{
-		Use:   "tables <source>",
-		Short: "List tables of a datasource",
+		Use:   "collections <source>",
+		Short: "List collections of the datasource",
 		Args:  cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			name := args[0]
@@ -139,6 +152,26 @@ func createRunCommand(config *config.Config) *cobra.Command {
 	}
 	runCmd.Flags().StringVarP(&formatStr, "format", "f", "", "output format")
 	return runCmd
+}
+
+func createListSourcesCommand(config *config.Config) *cobra.Command {
+	return &cobra.Command{
+		Use:   "sources",
+		Short: "List sources",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return config.ListSources()
+		},
+	}
+}
+
+func createListDrivesCommand(config *config.Config) *cobra.Command {
+	return &cobra.Command{
+		Use:   "drivers",
+		Short: "List drives",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return config.ListDrivers()
+		},
+	}
 }
 
 func getClient(config *config.Config, name string, format types.Format) (*client.Client, error) {
