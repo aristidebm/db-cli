@@ -15,7 +15,7 @@ import (
 
 type Config struct {
 	Sources map[string]types.Source `toml:"sources"`
-	Drivers map[string]types.Driver `toml:"drivers"`
+	Schemes map[string]types.Scheme `toml:"schemes"`
 }
 
 func (c *Config) Load() error {
@@ -27,7 +27,7 @@ func (c *Config) Load() error {
 
 	if !shutil.FileExists(configPath) {
 		c.Sources = map[string]types.Source{}
-		c.Drivers = map[string]types.Driver{}
+		c.Schemes = map[string]types.Scheme{}
 		return c.Save()
 	}
 
@@ -39,8 +39,8 @@ func (c *Config) Load() error {
 		c.Sources = map[string]types.Source{}
 	}
 
-	if c.Drivers == nil {
-		c.Drivers = map[string]types.Driver{}
+	if c.Schemes == nil {
+		c.Schemes = map[string]types.Scheme{}
 	}
 
 	return c.validate()
@@ -69,8 +69,8 @@ func (c *Config) AddSource(name string, url string) error {
 		return err
 	}
 
-	if !c.isDriverSupported(u.Scheme) {
-		return fmt.Errorf("%w: support for '%s' is coming soon", UnsupportedDriver, u.Scheme)
+	if !c.isSchemeSupported(u.Scheme) {
+		return fmt.Errorf("%w: support for '%s' is coming soon", UnsupportedScheme, u.Scheme)
 	}
 
 	if c.Sources == nil {
@@ -103,12 +103,12 @@ func (c *Config) GetSource(name string) (types.Source, error) {
 	return source, nil
 }
 
-func (c *Config) GetDriver(name string) (types.Driver, error) {
-	driver, ok := c.Drivers[name]
+func (c *Config) GetScheme(name string) (types.Scheme, error) {
+	scheme, ok := c.Schemes[name]
 	if !ok {
-		return types.Driver{}, fmt.Errorf("%w: driver '%s' not found", UnsupportedDriver, name)
+		return types.Scheme{}, fmt.Errorf("%w: scheme '%s' not found", UnsupportedScheme, name)
 	}
-	return driver, nil
+	return scheme, nil
 }
 
 func (c *Config) Edit() error {
@@ -130,8 +130,8 @@ func (c *Config) ListSources() error {
 	return nil
 }
 
-func (c *Config) ListDrivers() error {
-	for drv, _ := range c.Drivers {
+func (c *Config) ListSchemes() error {
+	for drv, _ := range c.Schemes {
 		fmt.Println(drv)
 	}
 	return nil
@@ -155,10 +155,10 @@ func (c *Config) validate() error {
 		}
 	}
 
-	for name, driver := range c.Drivers {
-		if driver.Interactive != "" && !c.isExecutable(driver.Interactive) {
-			return fmt.Errorf("%w: client '%s' in driver %s is not executable",
-				InvalidClient, driver.Interactive, name)
+	for name, scheme := range c.Schemes {
+		if scheme.Interactive != "" && !c.isExecutable(scheme.Interactive) {
+			return fmt.Errorf("%w: client '%s' in scheme %s is not executable",
+				InvalidClient, scheme.Interactive, name)
 		}
 	}
 
@@ -172,12 +172,12 @@ func (c *Config) isExecutable(command string) bool {
 	return shutil.IsCommandInstalled(strings.Fields(command)[0])
 }
 
-func (c *Config) isDriverSupported(driver string) bool {
+func (c *Config) isSchemeSupported(scheme string) bool {
 	supported := []string{
 		"sqlite3",
 		"postgres",
 		"mysql",
 		"redis",
 	}
-	return slices.Contains(supported, driver)
+	return slices.Contains(supported, scheme)
 }

@@ -62,7 +62,7 @@ func (c *SQLite) RunQuery(query string, args ...string) error {
 	case "":
 		// nothing to-do
 	default:
-		return fmt.Errorf("%w: driver %s", UnsupportedFormat, c.Driver)
+		return fmt.Errorf("%w: scheme %s", UnsupportedFormat, c.Scheme)
 	}
 	args = append(defaultArgs, args...)
 	args = append(args, c.Path, query)

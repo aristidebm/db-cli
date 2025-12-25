@@ -18,7 +18,7 @@ type Source struct {
 	Format      Format `toml:"format"`
 }
 
-type Driver struct {
+type Scheme struct {
 	Interactive string `toml:"interactive"`
 	Format      Format `toml:"format"`
 }

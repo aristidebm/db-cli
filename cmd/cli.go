@@ -166,10 +166,10 @@ func createListSourcesCommand(config *config.Config) *cobra.Command {
 
 func createListDrivesCommand(config *config.Config) *cobra.Command {
 	return &cobra.Command{
-		Use:   "drivers",
-		Short: "List drives",
+		Use:   "schemes",
+		Short: "List schemes",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return config.ListDrivers()
+			return config.ListSchemes()
 		},
 	}
 }
@@ -186,9 +186,9 @@ func getClient(config *config.Config, name string, format types.Format) (*client
 	}
 	c.Format = format
 	c.SourceConfig = source
-	driver, err := config.GetDriver(c.Driver)
+	scheme, err := config.GetScheme(c.Scheme)
 	if err == nil {
-		c.DriverConfig = driver
+		c.SchemeConfig = scheme
 	}
 	return c, nil
 }

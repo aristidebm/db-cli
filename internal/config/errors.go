@@ -6,4 +6,4 @@ import (
 
 var InvalidSource = errors.New("invalid source")
 var InvalidClient = errors.New("invalid client")
-var UnsupportedDriver = errors.New("unsupported driver")
+var UnsupportedScheme = errors.New("unsupported scheme")

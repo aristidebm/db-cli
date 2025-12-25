@@ -19,7 +19,7 @@ type DataSource interface {
 
 type Client struct {
 	URL          string
-	Driver       string
+	Scheme       string
 	Host         string
 	Port         string
 	User         string
@@ -31,7 +31,7 @@ type Client struct {
 	Stderr       io.Writer
 	Format       types.Format
 	SourceConfig types.Source
-	DriverConfig types.Driver
+	SchemeConfig types.Scheme
 	DataSource
 }
 
@@ -48,7 +48,7 @@ func (c *Client) parseURL() error {
 	if err != nil {
 		return err
 	}
-	c.Driver = u.Scheme
+	c.Scheme = u.Scheme
 	c.Host = u.Hostname()
 	c.Port = u.Port()
 	if u.User != nil {
@@ -61,7 +61,7 @@ func (c *Client) parseURL() error {
 	c.DBName = strings.TrimPrefix(u.Path, "/")
 
 	// Handle special cases
-	switch c.Driver {
+	switch c.Scheme {
 	case "sqlite3":
 		c.Path = u.Path
 		c.DataSource = &SQLite{}
@@ -89,8 +89,8 @@ func (c *Client) GetInteractiveREPL() string {
 	if c.SourceConfig.Interactive != "" {
 		return c.SourceConfig.Interactive
 	}
-	if c.DriverConfig.Interactive != "" {
-		return c.DriverConfig.Interactive
+	if c.SchemeConfig.Interactive != "" {
+		return c.SchemeConfig.Interactive
 	}
 	return ""
 }
@@ -102,8 +102,8 @@ func (c *Client) GetFormat() types.Format {
 	if c.SourceConfig.Format != "" {
 		return c.SourceConfig.Format
 	}
-	if c.DriverConfig.Format != "" {
-		return c.DriverConfig.Format
+	if c.SchemeConfig.Format != "" {
+		return c.SchemeConfig.Format
 	}
 	return ""
 }

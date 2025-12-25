@@ -65,7 +65,7 @@ func (c *Postgres) RunQuery(query string, args ...string) error {
 		args = append(args, "--pset", "format=unaligned")
 	case "":
 	default:
-		return fmt.Errorf("%w: driver %s", UnsupportedFormat, c.Driver)
+		return fmt.Errorf("%w: scheme %s", UnsupportedFormat, c.Scheme)
 	}
 	cmd := exec.Command("psql", args...)
 	return shutil.Run(cmd,
